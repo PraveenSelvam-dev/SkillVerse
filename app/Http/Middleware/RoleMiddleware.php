@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class RoleMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  ...$roles
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next, ...$roles)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+        
+        // Admin has superuser access to all pages and dashboards
+        if (auth()->user()->role === 'admin') {
+            return $next($request);
+        }
+        
+        if (!in_array(auth()->user()->role, $roles)) {
+            abort(403, 'Unauthorized access.');
+        }
+        
+        return $next($request);
+    }
+}
