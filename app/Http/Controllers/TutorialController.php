@@ -113,28 +113,154 @@ class TutorialController extends Controller
     }
 
     /**
-     * Get topic-specific content (code, exercises) for a language and topic
+     * Get topic-specific content structured according to W3Schools format
      */
     private function getTopicContent($lang, $slug, $title)
     {
         $lang = strtolower($lang);
+        $rawContent = null;
 
         // Check dedicated topic class first
         if (isset(self::$topicClasses[$lang])) {
-            $content = self::$topicClasses[$lang]::getTopicContent($slug);
-            if ($content) {
-                return $content;
-            }
+            $rawContent = self::$topicClasses[$lang]::getTopicContent($slug);
         }
 
-        // Generic fallback content
-        $langName = strtoupper($lang);
+        $langName = ucfirst($lang);
+        if ($lang === 'js') $langName = 'JavaScript';
+        if ($lang === 'sql') $langName = 'SQL';
+        if ($lang === 'html') $langName = 'HTML';
+        if ($lang === 'css') $langName = 'CSS';
+        if ($lang === 'cpp') $langName = 'C++';
+        if ($lang === 'cs') $langName = 'C#';
+
+        // Custom exact match for Variable Names (Python - Variable Names)
+        if ($lang === 'python' && ($slug === 'variable-names' || $slug === 'variables')) {
+            return [
+                'lang_name' => $langName,
+                'title' => $title,
+                'intro_p' => 'A variable can have a short name (like x and y) or a more descriptive name (age, carname, total_volume).',
+                'rules_header' => 'Rules for Python variables:',
+                'rules' => [
+                    'A variable name must start with a letter or the underscore character',
+                    'A variable name cannot start with a number',
+                    'A variable name can only contain alpha-numeric characters and underscores (A-z, 0-9, and _ )',
+                    'Variable names are case-sensitive (age, Age and AGE are three different variables)',
+                    'A variable name cannot be any of the Python keywords.'
+                ],
+                'example_legal' => [
+                    'title' => 'Example',
+                    'label' => 'Legal variable names:',
+                    'code' => "myvar = \"John\"\nmy_var = \"John\"\n_my_var = \"John\"\nmyVar = \"John\"\nMYVAR = \"John\"\nmyvar2 = \"John\""
+                ],
+                'example_illegal' => [
+                    'title' => 'Example',
+                    'label' => 'Illegal variable names:',
+                    'code' => "2myvar = \"John\"\nmy-var = \"John\"\nmy var = \"John\""
+                ],
+                'note' => 'Remember that variable names are case-sensitive',
+                'subsections_header' => 'Multi Words Variable Names',
+                'subsections_p' => 'Variable names with more than one word can be difficult to read. There are several techniques you can use to make them more readable:',
+                'subsections' => [
+                    [
+                        'name' => 'Camel Case',
+                        'desc' => 'Each word, except the first, starts with a capital letter:',
+                        'code' => 'myVariableName = "John"'
+                    ],
+                    [
+                        'name' => 'Pascal Case',
+                        'desc' => 'Each word starts with a capital letter:',
+                        'code' => 'MyVariableName = "John"'
+                    ],
+                    [
+                        'name' => 'Snake Case',
+                        'desc' => 'Each word is separated by an underscore character:',
+                        'code' => 'my_variable_name = "John"'
+                    ]
+                ],
+                'quiz' => [
+                    'question' => 'Which is NOT a legal variable name?',
+                    'options' => [
+                        ['id' => 0, 'text' => 'my-var = 20', 'is_correct' => true],
+                        ['id' => 1, 'text' => 'my_var = 20', 'is_correct' => false],
+                        ['id' => 2, 'text' => 'Myvar = 20', 'is_correct' => false],
+                        ['id' => 3, 'text' => '_myvar = 20', 'is_correct' => false],
+                    ],
+                    'correct_index' => 0
+                ],
+                'video' => [
+                    'title' => 'Video: Python Variable Names',
+                    'url' => 'https://www.youtube.com/results?search_query=python+variable+names+tutorial'
+                ],
+                'code' => $rawContent['code'] ?? "myvar = \"John\"\nmy_var = \"John\"\nprint(myvar, my_var)",
+                'question' => $rawContent['question'] ?? 'Create a variable named carname and assign the value Volvo to it.',
+                'prefix' => $rawContent['prefix'] ?? '',
+                'suffix' => $rawContent['suffix'] ?? ' = "Volvo"',
+                'answer' => $rawContent['answer'] ?? 'carname'
+            ];
+        }
+
+        // Generic structured generator for all other topics across languages
+        $codeSnippet = $rawContent['code'] ?? "print(\"Hello from {$langName} {$title}!\")";
+        $exerciseQ = $rawContent['question'] ?? "Fill in the blank to complete the {$title} statement:";
+        $prefix = $rawContent['prefix'] ?? '';
+        $suffix = $rawContent['suffix'] ?? '';
+        $answer = $rawContent['answer'] ?? 'SkillVerse';
+
         return [
-            'code' => "<!DOCTYPE html>\n<html>\n<head>\n<style>\nbody { background: #0f172a; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 30px; }\nh1 { color: #6C63FF; }\n.box { background: #1e293b; padding: 20px; border-radius: 12px; margin-top: 20px; }\ncode { color: #4ADE80; font-family: monospace; }\n</style>\n</head>\n<body>\n<h1>{$title}</h1>\n<div class=\"box\">\n<p>This is a live demonstration for <strong>{$title}</strong> in <strong>{$langName}</strong>.</p>\n<p>Edit this code and click <strong>Run Code</strong> to see your changes!</p>\n</div>\n</body>\n</html>",
-            'question' => "Fill in the blank to complete the {$title} statement:",
-            'prefix' => 'print("',
-            'suffix' => '")',
-            'answer' => 'SkillVerse'
+            'lang_name' => $langName,
+            'title' => $title,
+            'intro_p' => "{$title} is a core concept in {$langName}. Mastering {$title} allows you to write clean, efficient, and maintainable software.",
+            'rules_header' => "Rules & Guidelines for {$langName} {$title}:",
+            'rules' => [
+                "Always adhere to standard {$langName} naming and syntax guidelines.",
+                "Keep code modular, readable, and well-structured.",
+                "Verify compatibility across runtime environments.",
+                "Use descriptive names and proper formatting for all declarations."
+            ],
+            'example_legal' => [
+                'title' => 'Example',
+                'label' => "Correct {$title} usage example:",
+                'code' => $codeSnippet
+            ],
+            'example_illegal' => [
+                'title' => 'Syntax Note & Common Pitfalls',
+                'label' => 'Avoid common syntax mistakes and invalid declarations:',
+                'code' => "# Invalid syntax attempt:\n// Avoid unformatted or undeclared symbols\n" . substr($codeSnippet, 0, strpos($codeSnippet, "\n") ?: strlen($codeSnippet))
+            ],
+            'note' => "Remember that {$title} conventions in {$langName} play a key role in application performance and readability.",
+            'subsections_header' => "Standard Variations of {$title}",
+            'subsections_p' => "Different design patterns and syntax styles can be used depending on your project requirements:",
+            'subsections' => [
+                [
+                    'name' => 'Standard Approach',
+                    'desc' => 'The standard syntax recommended for production environments:',
+                    'code' => $codeSnippet
+                ],
+                [
+                    'name' => 'Inline / Concise Syntax',
+                    'desc' => 'A compact single-line variation:',
+                    'code' => str_replace("\n", " ", $codeSnippet)
+                ]
+            ],
+            'quiz' => [
+                'question' => "Which of the following represents the correct syntax for {$title} in {$langName}?",
+                'options' => [
+                    ['id' => 0, 'text' => $codeSnippet, 'is_correct' => true],
+                    ['id' => 1, 'text' => "INVALID_{$slug}_FORMAT", 'is_correct' => false],
+                    ['id' => 2, 'text' => "null_undefined_statement()", 'is_correct' => false],
+                    ['id' => 3, 'text' => "123_invalid_prefix", 'is_correct' => false],
+                ],
+                'correct_index' => 0
+            ],
+            'video' => [
+                'title' => "Video: {$langName} {$title}",
+                'url' => "https://www.youtube.com/results?search_query=" . urlencode("{$langName} {$title} tutorial")
+            ],
+            'code' => $codeSnippet,
+            'question' => $exerciseQ,
+            'prefix' => $prefix,
+            'suffix' => $suffix,
+            'answer' => $answer
         ];
     }
 
@@ -180,7 +306,7 @@ class TutorialController extends Controller
             $nextTopic = $allFlatTopics[1] ?? null;
         }
 
-        // Get dynamic topic content & execution payload
+        // Get dynamic topic content & execution payload structured in full W3Schools topic layout format
         $topicContent = $this->getTopicContent($lang, $currentTopic['slug'] ?? 'introduction', $currentTopic['title'] ?? 'Tutorial');
 
         return view('tutorials.show', compact(
